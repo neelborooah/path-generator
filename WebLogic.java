@@ -75,46 +75,15 @@ public class WebLogic {
         return result;
     }
 
-    public static ArrayList<LocationStore> getAllPoints(JSONArray steps, Calendar startTime) {
-        //Generate a list of all points for a given step in JSON object
-        //With the timestamp for each step
-        ArrayList<LocationStore> givenLocations = new ArrayList<>();
-        Calendar time_elapsed = startTime;
+    public static JSONArray getSteps(JSONObject data) {
+        JSONArray steps = new JSONArray();
+
         try {
-            for(int i = 0; i < steps.length(); i++) {
-                JSONObject step = steps.getJSONObject(i);
-                LocationStore start = new LocationStore(step.getJSONObject("start_location").getDouble("lat"),
-                        step.getJSONObject("start_location").getDouble("lng"));
-                LocationStore end = new LocationStore(step.getJSONObject("end_location").getDouble("lat"),
-                        step.getJSONObject("end_location").getDouble("lng"));
-
-                int duration = step.getJSONObject("duration").getInt("value");
-                double  distance = step.getJSONObject("distance").getDouble("value"),
-                        speed = distance / duration;
-                String polyline = step.getJSONObject("polyline").getString("points");
-
-                ArrayList<LocationStore> points = GeoLogic.getCoordsForPolyline(polyline);
-
-                double dist_per_point = distance / points.size();
-                int millis = (int) ((dist_per_point / speed) * 1000);
-                for(LocationStore l: points) {
-                    time_elapsed.add(Calendar.MILLISECOND, millis);
-                }
-
-                givenLocations.addAll(points);
-//                //Find points in between two steps. Not sure if required.
-//                if(i < steps.length() - 1) {
-//                    JSONObject nextStartLoc = steps.getJSONObject(i+1).getJSONObject("start_location");
-//                    LocationStore nextStart = new LocationStore(nextStartLoc.getDouble("lat"), nextStartLoc.getDouble("lng"));
-//                    points = GeoLogic.getCoordsBetweenPoints(end, nextStart);
-//                    givenLocations.addAll(points);
-//                }
-            }
+            steps = data.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONArray("steps");
         } catch(JSONException e) {
             System.out.println("Error parsing data: " + e.toString());
         }
-
-        return givenLocations;
+        return steps;
     }
 
 
